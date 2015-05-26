@@ -1,5 +1,5 @@
 """
-Find changepoints using binary segmentation.
+Find changepoints using binary segmentation and the bootstrap.  The main function is find_all_cps.
 """
 
 import numpy as np
@@ -25,12 +25,19 @@ def welch(xs, ys):
     return np.abs(xbar - ybar)/np.sqrt(sx2/len(xs) + sy2/len(ys))
 
 
+def check_nobs(N, minnobs):
+    if N < 2*minnobs + 1:
+        raise ValueError("Sample size must be greater than or equal to minnobs")
+
+
 def compute_endpoints(N, minnobs):
     return minnobs, N - minnobs
 
 
 def _most_likely_cp(xs, minnobs):
-    start, end = compute_endpoints(len(xs), minnobs)
+    N = len(xs)
+    check_nobs(N, minnobs)
+    start, end = compute_endpoints(N, minnobs)
     wstats = np.array([welch(xs[:i], xs[i:]) for i in xrange(start, end)])
     cp = bn.nanargmax(wstats)
     stat = wstats[cp]
@@ -47,6 +54,10 @@ def most_likely_cp(xs, minnobs, nsamples):
     minnobs: int
         Shortest interval to search for a changepoint.
     nsamples: int
+
+    Returns
+    -------
+    (changepoint index, p-value)
     """
     cp, stat = _most_likely_cp(xs, minnobs)
     prob = pval(stat, xs, minnobs=minnobs, nsamples=nsamples)
@@ -66,12 +77,12 @@ def bootstrap_cps(xs, nsamples, minnobs):
     return res
 
 
-def pval(stat, xs, minnobs, nsamples):
+def pval(wstat, xs, minnobs, nsamples):
     """
     Computes the bootstrapped p-value for a Welch statistic on the sample xs.
     """
     sample = bootstrap_cps(xs, minnobs=minnobs, nsamples=nsamples)
-    return 1 - bn.nanmean(sample < stat)
+    return 1 - bn.nanmean(sample < wstat)
 
 
 def _find_all_cps(xs, nsamples, index, minnobs):
@@ -79,13 +90,15 @@ def _find_all_cps(xs, nsamples, index, minnobs):
     if xs is None or (len(xs) < (2*minnobs + 1)):
         return res
 
-    cp, prob = most_likely_cp(xs, minnobs=minnobs, nsamples=nsamples)
-    res.append((cp + index, prob))
+    cp_local, prob = most_likely_cp(xs, minnobs=minnobs, nsamples=nsamples)
+    cp_global = cp_local + index
+    res.append((cp_global, prob))
 
-    left, right = _find_all_cps(xs[:cp], minnobs=minnobs, nsamples=nsamples, index=index), \
-        _find_all_cps(xs[(cp + 1):], minnobs=minnobs, nsamples=nsamples, index=cp + 1)
+    left = _find_all_cps(xs[:cp_local], minnobs=minnobs, nsamples=nsamples, index=index)
     if left:
         res.extend(left)
+
+    right = _find_all_cps(xs[(cp_local + 1):], minnobs=minnobs, nsamples=nsamples, index=cp_global + 1)
     if right:
         res.extend(right)
     return res

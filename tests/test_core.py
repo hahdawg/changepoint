@@ -3,6 +3,11 @@ import numpy as np
 
 
 def test_most_likely_cp():
+
+    ws = np.r_[np.zeros(51), np.ones(50)]
+    loc, _ = cp.most_likely_cp(ws, minnobs=10, nsamples=10)
+    assert loc == 51
+
     xs = np.r_[np.zeros(50), np.ones(50)]
     loc, _ = cp.most_likely_cp(xs, minnobs=10, nsamples=10)
     assert loc == 50
@@ -21,11 +26,11 @@ def test_most_likely_cp():
 def test_find_all_cps():
     extract_cps = lambda ys: [y[0] for y in ys]
 
-    xs = np.r_[np.zeros(20), np.ones(20), np.zeros(20), np.ones(30)]
-    assert extract_cps(cp.find_all_cps(xs)) == [20, 40, 60]
+    even = np.r_[np.zeros(20), np.ones(20), np.zeros(20), np.ones(30)]
+    assert extract_cps(cp.find_all_cps(even)) == [20, 40, 60]
     
-    ys = np.r_[np.zeros(20), np.ones(15), np.zeros(20), np.ones(30)]
-    assert extract_cps(cp.find_all_cps(ys)) == [20, 35, 55]
+    odd = np.r_[np.zeros(20), np.ones(15), np.zeros(20), np.ones(30)]
+    assert extract_cps(cp.find_all_cps(odd)) == [20, 35, 55]
 
     print "find_all_cps tests passed"
 
