@@ -5,8 +5,6 @@ Find changepoints using binary segmentation.
 import numpy as np
 import bottleneck as bn
 
-MINNOBS = 10
-
 
 def welch(xs, ys):
     """
@@ -78,7 +76,7 @@ def pval(stat, xs, minnobs, nsamples):
 
 def _find_all_cps(xs, nsamples, index, minnobs):
     res = list()
-    if xs is None or (len(xs) < (2*MINNOBS + 1)):
+    if xs is None or (len(xs) < (2*minnobs + 1)):
         return res
 
     cp, prob = most_likely_cp(xs, minnobs=minnobs, nsamples=nsamples)
