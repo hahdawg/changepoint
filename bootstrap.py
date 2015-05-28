@@ -1,7 +1,6 @@
 """
 Find changepoints using binary segmentation and the bootstrap.  The main function is find_all_cps.
 """
-
 import numpy as np
 import bottleneck as bn
 
@@ -97,11 +96,13 @@ def _find_all_cps(xs, nsamples, index, minnobs, crit_val):
     cp_global = cp_local + index
     res.append((cp_global, prob))
 
-    left = _find_all_cps(xs[:cp_local], minnobs=minnobs, nsamples=nsamples, index=index, crit_val=crit_val)
+    left = _find_all_cps(xs[:cp_local], minnobs=minnobs, nsamples=nsamples, 
+        index=index, crit_val=crit_val)
     if left:
         res.extend(left)
 
-    right = _find_all_cps(xs[(cp_local + 1):], minnobs=minnobs, nsamples=nsamples, index=cp_global + 1, crit_val=crit_val)
+    right = _find_all_cps(xs[(cp_local + 1):], minnobs=minnobs, nsamples=nsamples, 
+        index=cp_global + 1, crit_val=crit_val)
     if right:
         res.extend(right)
     return res
