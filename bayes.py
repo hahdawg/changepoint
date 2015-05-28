@@ -37,14 +37,16 @@ def compute_rt(rs, pred_prob, h):
     Computes all run probabilities for time t, using run probabilities for time s,
     predictive probabilities, and prior probability of a change point.
 
-    At time s, rs will be like [p0, p1, ..., ps], where pi is the probability that 
-    the run length at time s was i.  The probability of a change point is the sum of 
-    the probabilities of each run length being zero.  For each pi in rs, the probability
-    that the run length increases by 1 is represented by the array of growth probabilities.
+    At time s, rs will be like [p0, p1, ..., ps, 0, ..., 0], where pi is the probability that 
+    the run length at time s was i.  rt will be like [q0, q1, ..., qs, qt, 0, ..., 0], where 
+        q0 is the probability of a change point at time t, and
+        [q1, .... qt] are the probabilities that the runs represented by [p0, ..., ps] continued.
     """
     rp = rs*pred_prob
     rph = rp*h
+    # probability of change point
     cp_prob = rph.sum()
+    # probability that each run grows
     growth_prob = rp - rph
     rt = np.r_[cp_prob, growth_prob]
     return rt/rt.sum()
@@ -76,11 +78,11 @@ def find_all_cps(xs, cp_prob=1./250, plot=False):
     Returns
     -------
     (R, M, V)
-        R: run length probabilities for (run length, time index)
-        M: posterior means for (run length, time index)
-        V: posterior variances for (run length, time index)
-    Rows are run lengths, columns are time indexes.  All matrices are upper triangular, because 
-    the run length can't be greater than the index of the current period.
+        R[i, j]: run length probabilities for (run length = i, time index = j)
+        M[i, j]: posterior means for (run length = i, time index = j)
+        V[i, j]: posterior variances for (run length = i, time index = j)
+    All matrices are upper triangular, because the run length can't be greater than the 
+    index of the current period.
 
     Example
     -------
