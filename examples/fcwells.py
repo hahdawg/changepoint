@@ -14,5 +14,11 @@ def load_data():
 
 def test_bayes():
     xs = load_data()
-    mu_hat, var_hat = bayes.find_all_cps(xs, cp_prob=1./250, plot=True)
+    R, M, V = bayes.find_all_cps(xs, cp_prob=1./250, plot=False)
+    mu_hat = np.sum(R*M, axis=0)
+    var_hat = np.sum(R*V, axis=0)
     bayes.plot_results(xs, mu_hat, var_hat)
+
+
+if __name__ == "__main__":
+    test_bayes()
