@@ -10,7 +10,7 @@ def load_data():
     here = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(here, "wells.csv")) as f:
         lines = f.readlines()
-    return np.array([float(f.strip()) for f in lines])[1000:2500]
+    return np.array([float(f.strip()) for f in lines])[1500:2500]
 
 
 def binseg_example():
