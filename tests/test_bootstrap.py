@@ -1,4 +1,4 @@
-import changepoint.core as cp
+import changepoint.bootstrap as cp
 import numpy as np
 
 
@@ -25,6 +25,9 @@ def test_most_likely_cp():
 
 def test_find_all_cps():
     extract_cps = lambda ys: [y[0] for y in ys]
+    
+    nocps = np.zeros(50)
+    assert cp.find_all_cps(nocps) == []
 
     even = np.r_[np.zeros(20), np.ones(20), np.zeros(20), np.ones(30)]
     assert extract_cps(cp.find_all_cps(even)) == [20, 40, 60]

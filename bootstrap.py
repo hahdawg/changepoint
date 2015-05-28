@@ -85,20 +85,23 @@ def pval(wstat, xs, minnobs, nsamples):
     return 1 - bn.nanmean(sample < wstat)
 
 
-def _find_all_cps(xs, nsamples, index, minnobs):
+def _find_all_cps(xs, nsamples, index, minnobs, crit_val):
     res = list()
     if xs is None or (len(xs) < (2*minnobs + 1)):
         return res
 
     cp_local, prob = most_likely_cp(xs, minnobs=minnobs, nsamples=nsamples)
+    if prob >= crit_val:
+        return res
+
     cp_global = cp_local + index
     res.append((cp_global, prob))
 
-    left = _find_all_cps(xs[:cp_local], minnobs=minnobs, nsamples=nsamples, index=index)
+    left = _find_all_cps(xs[:cp_local], minnobs=minnobs, nsamples=nsamples, index=index, crit_val=crit_val)
     if left:
         res.extend(left)
 
-    right = _find_all_cps(xs[(cp_local + 1):], minnobs=minnobs, nsamples=nsamples, index=cp_global + 1)
+    right = _find_all_cps(xs[(cp_local + 1):], minnobs=minnobs, nsamples=nsamples, index=cp_global + 1, crit_val=crit_val)
     if right:
         res.extend(right)
     return res
@@ -131,5 +134,6 @@ def find_all_cps(xs, minnobs=10, nsamples=50, crit_val=0.1):
     >>> assert 100 in cps 
     >>> assert 200 in cps
     """
-    res = [(c, p) for c, p in _find_all_cps(xs, minnobs=minnobs, index=0, nsamples=nsamples) if p < crit_val]
+    cps = _find_all_cps(xs, minnobs=minnobs, index=0, nsamples=nsamples, crit_val=crit_val) 
+    res = [(c, p) for c, p in cps if p < crit_val]
     return sorted(res, key=lambda t: t[0])
