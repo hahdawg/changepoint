@@ -5,7 +5,7 @@ import numpy as np
 import bottleneck as bn
 
 
-def welch(xs, ys):
+def welch(xs, ys, meanfcn=bn.nanmedian):
     """
     Welch's statistic for equal means
     http://en.wikipedia.org/wiki/Welch%27s_t_test
@@ -19,8 +19,8 @@ def welch(xs, ys):
     -------
     float
     """
-    xbar, ybar = bn.nanmean(xs), bn.nanmean(ys)
-    sx2, sy2 = bn.nanvar(xs) + np.spacing(1), bn.nanvar(ys) + np.spacing(1)
+    xbar, ybar = map(meanfcn, (xs, ys))
+    sx2, sy2 = map(lambda zs: bn.nanvar(xs) + np.spacing(1), (xs, ys))
     return np.abs(xbar - ybar)/np.sqrt(sx2/len(xs) + sy2/len(ys))
 
 
